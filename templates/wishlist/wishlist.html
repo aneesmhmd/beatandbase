@@ -1,0 +1,131 @@
+{% extends 'user_home/base.html' %}
+
+
+{% block title %}Your Wishlist{% endblock title %}
+
+{% block body %}
+
+{% for m in messages  %}
+        {{m}}
+{% endfor %}
+
+<div class="container-xl">
+    <h3 class="text-center">Your Wishlist</h3>
+    <br>
+    <br>
+    <table class="table table-borderless">
+        <thead>
+            <tr>
+                <th >Image</th>
+                <th >Product Name</th>
+                <th >Unit Price</th>
+                <th >Stock Status</th>
+                <th ></th>
+                <th ></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if products %}
+            {% for product in products  %}
+            <tr>
+                <td >
+                    <div class="display-flex align-center">
+                        <div style="width:100px" class="img-product">
+                            <img class="w-100" src="{{product.product.product_img.url}}" alt="" class="mCS_img_loaded">
+                        </div>
+                    </div>
+                </td>
+                <td >
+                    {{product.product.product_name}}
+                </td>
+                <td  class="price">₹ {{product.product.product_price}}</td>
+                <td ><span class="in-stock-box text-info">In Stock</span></td>
+                <td >
+                    <a href="{% url 'cart-summary' %}">
+                        <button id="add-cart" value="{{product.product.id}}" class="btn btn-primary mx-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
+                    </a>
+                </td>
+                <td class="text-center">
+
+                    <a  data-bs-toggle="modal" data-bs-target="#Confirm{{forloop.counter}}">
+                        <i class="far fa-trash-alt"></i>
+                      </a>
+          
+                      <!--Confirm Modal -->
+                      <div class="modal fade" id="Confirm{{forloop.counter}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="" id="exampleModalLabel">User Image</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <form action="{% url 'delete-wishlist' product.product.id %}" method="POST">
+                                {% csrf_token %}
+                                <div class="p-3">
+                                    Are you sure to remove <span class="text-primary"> {{product.product}}</span> From wishlist
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                  <button type="submit"
+                                    class="btn btn-danger btn-lg gradient-custom-4 w-50 text-light">Remove</button>
+                                </div>
+                
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <td colspan="5" class="text-center text-danger">
+                <h4 class="p-4">No products in wishlist</h4>
+            </td>
+            {% endif %}
+        </tbody>
+      </table>
+</div>
+
+
+<script>
+
+
+    $(document).on('click','#add-cart',function(e){
+
+        e.preventDefault();
+
+        // if (document.getElementById('quantity').value < 1){
+        //     alert('entered wrong enttry')
+        //     return;
+        // }
+        
+
+        $.ajax({
+
+            type:'POST',
+            url:"{% url 'cart-add' %}",
+            data:{
+                product_id:$('#add-cart').val(),
+                product_quantity:1,
+                csrfmiddlewaretoken: "{{csrf_token}}",
+                action:'post'
+            
+            
+            
+            },
+
+            success: function(json){
+                window.location.replace("/cart");
+            },
+
+            error: function(xhr, errmshg, err){
+
+            }
+        });
+
+    });
+</script>
+
+{% endblock body %}
