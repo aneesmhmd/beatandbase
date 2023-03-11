@@ -1,5 +1,7 @@
 {% extends 'user_home/base.html' %}
 
+
+
 {% block title %}
 User profile
 {% endblock title %}
@@ -184,10 +186,20 @@ User profile
 
                           <div class="row">
                             <div class="col-sm-5">
-                              <p class="mb-0">House Name</p>
+                              <p class="mb-0">Full Name</p>
                             </div>
                             <div class="col-sm-7">
-                                {{ a.house_name}}
+                                {{ a.fullname}}
+                            </div>
+                          </div>
+                          <hr>
+
+                          <div class="row">
+                            <div class="col-sm-5">
+                              <p class="mb-0">Contact Number</p>
+                            </div>
+                            <div class="col-sm-7">
+                                {{ a.contact_number}}
                             </div>
                           </div>
                           <hr>

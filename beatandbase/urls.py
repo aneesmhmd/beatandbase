@@ -30,6 +30,7 @@ urlpatterns = [
     path('admin/admin_brands/', include('admin_brand.urls')),
     path('admin/admin_products/', include('admin_products.urls')),
     path('admin/admin_category/', include('admin_category.urls')),
+    path('admin/admin_variant/', include('admin_variant.urls')),
     path('admin/ad_banner/', include('ad_banner.urls')),
     path('cart/', include('cart.urls')),
     path('user_profile/', include('user_profile.urls')),

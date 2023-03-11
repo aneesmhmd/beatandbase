@@ -26,10 +26,8 @@ def add_product(request):
     name = request.POST['product_name']
     brand = request.POST['product_brand']
     category = request.POST['product_category']
-    price = request.POST['product_price']
-    quantity = request.POST['product_quantity']
 
-    check = [name,brand,category,price,quantity]
+    check = [name,brand,category]
     for values in check:
         if values == '':
             messages.info(request,'some fields are empty')
@@ -37,20 +35,15 @@ def add_product(request):
         else:
             pass
     
-    try:
-        check_number = int(price)
-        check_number = int(quantity)
-    except:
-        messages.info(request,'number field got unexpected values')
-        return redirect(admin_products)
-        
-
+    
     image = request.FILES['image']
     brand_instance = Brand.objects.get(id=brand)
     category_instance = Categories.objects.get(id=category)
-    new = Product.objects.create(is_available=True,product_img=image,product_name=name,brand=brand_instance,category=category_instance,product_price=price,product_quantity=quantity)
+    new = Product.objects.create(product_img=image,product_name=name,brand=brand_instance,category=category_instance)
     new.save()
     return redirect(admin_products)
+
+
 
 def edit_product(request,product_id):
     name = request.POST['product_name']

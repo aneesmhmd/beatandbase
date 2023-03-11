@@ -1,18 +1,12 @@
 from django.shortcuts import render,redirect
 from user_home.models import CustomUser
-from .models import User_Address,Default_Address
+from .models import User_Address
 from .forms import AddressForm
 from django.contrib import messages
 
 def user_profile(request):
-    try:
-        default = Default_Address.objects.get(user = request.user)
-    except:
-        default = None
-
     context = {
         'address':User_Address.objects.filter(user=request.user),
-        'default':default
     }
     print(request.user)
     return render(request,'user_profile/user_profile.html',context)

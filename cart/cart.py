@@ -1,5 +1,6 @@
 from decimal import Decimal
 from admin_products.models import Product
+from admin_variant.models import Product_Variant
 
 
 
@@ -13,44 +14,50 @@ class Cart():
         
         self.cart =  cart
 
-    def add(self,product,product_qty):
-        product_id = str(product.id)
+    def add(self,variant,product,color,price,product_qty):
+        variant_id = str(variant.id)
 
-        if product_id in self.cart:
-            self.cart[product_id]['qty'] = product_qty
+        if variant_id in self.cart:
+            if self.cart[variant_id]['color'] == color:
+                self.cart[variant_id]['qty'] = product_qty
+            else:
+                self.cart[variant_id] = {'color':str(color),'price':str(price),'qty':product_qty}
         
         else:
-            self.cart[product_id] = {'price':str(product.product_price),'qty':product_qty}
-        
+            self.cart[variant_id] = {'color':str(color),'price':str(price),'qty':product_qty}
         self.session.modified = True
 
-    def delete(self, product):
+    def delete(self, variant):
 
-        product_id = str(product)
+        variant_id = str(variant)
 
-        if product_id in self.cart:
+        if variant_id in self.cart:
 
-            del self.cart[product_id]
+            del self.cart[variant_id]
 
         self.session.modified = True
 
     
-    def update(self, product, qty):
+    def update(self, variant, qty):
 
-        product_id = str(product)
+        variant_id = str(variant)
         product_quantity = qty
 
-        if product_id in self.cart:
+        if variant_id in self.cart:
 
-            self.cart[product_id]['qty'] = product_quantity
+            self.cart[variant_id]['qty'] = product_quantity
 
         self.session.modified = True
 
 
 
     def __len__(self):
+
+        val = 0
+        for x in self.cart.values():
+            val += 1
         
-        return sum(item['qty'] for item in self.cart.values())
+        return val
     
 
 
@@ -58,13 +65,13 @@ class Cart():
 
         all_product_ids = self.cart.keys()
 
-        products = Product.objects.filter(id__in=all_product_ids)
+        variants = Product_Variant.objects.filter(id__in=all_product_ids)
 
         cart = self.cart.copy()
 
-        for product in products:
+        for variant in variants:
 
-            cart[str(product.id)]['product'] = product
+            cart[str(variant.id)]['variant'] = variant
 
         
         for item in cart.values():

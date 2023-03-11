@@ -3,19 +3,24 @@
 
 {% block links %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<!-- Sweet alert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
+
 {% endblock links %}
 
 {% block body %}
     <!-- Shop Detail Start -->
     <div class="container-fluid py-5">
-            {% for p in main_product %}
+      
 
             <div class="row px-xl-5">
             <div class="col-lg-5 pb-5">
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner border">
                         <div style="height: 500px;" class="z-3 text-center carousel-item  active  ">
-                            <img class="h-100 big_img " src="{{p.product_img.url}}" alt="Image">
+                            <img class="h-100 big_img " src="{{m_product.product_img.url}}" alt="Image">
                         </div>
                         {% for image in images  %}
                             
@@ -35,8 +40,8 @@
 
             <div class="col-lg-7 pb-5">
                 <h3 class="font-weight-semi-bold">
-                    {{p.product_name}}
-                    <a href="{% url 'add-wishlist' p.id %}" class="btn btn-light text-primary mx-5 pt-2">
+                    {{m_product.product_name}}
+                    <a href="{% url 'add-wishlist' m_product.id %}" class="btn btn-light text-primary mx-5 pt-2">
                         add to wishlist
                     </a>
                 </h3>
@@ -49,11 +54,27 @@
                         <small class="far fa-star"></small>
                     </div>
                     <small class="pt-1">(50 Reviews)</small>
+
                 </div>
-            <h3 class="font-weight-semi-bold mb-4">₹{{p.product_price}}</h3>
+            <h3 class="font-weight-semi-bold mb-4" id="product_price">₹{{m_product.product_price}}</h3> 
+            <span id="out-of-stock" style="display: none;" class="text-danger">
+                out of stock
+            </span>
+            <span id="stock-count" class="text-warning">
+               
+            </span>
+
                 <p class="mb-4">
-                   {{p.product_detail}}
+                   {{m_product.product_detail}}
                 </p>
+
+                <div class="form-group w-50 mb-4">
+                    <select id="product_variant" class="form-control" id="dropdownInput">
+                      {% for v in variants  %}
+                      <option  value="{{v.id}}">{{v.color}}</option>
+                      {% endfor %}
+                    </select> 
+                  </div>     
                 {% comment %} <div class="d-flex mb-4">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
                     <form>
@@ -88,19 +109,42 @@
                         </div>
                         <input id="quantity" type="text" class="form-control bg-secondary text-center" value="1">
                         <div class="input-group-btn">
-                            <button onclick="add_quantity('{{p.id}}')" class="btn btn-primary btn-plus">
+                            <button onclick="add_quantity('{{m_product.id}}')" class="btn btn-primary btn-plus">
                                 <i class="fa fa-plus"></i>
                             </button>
                         </div>
                     </div>
-
-                    <button id="add-cart" value="{{p.id}}" class="btn btn-primary mx-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
-                 
+                   
+                    
+                    <button id="add-cart" value="{{m_product.id}}" class="btn btn-primary mx-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
+                    
                     <a href="{% url 'cart-summary' %}">
-                        <button style="display: none;" id="view-cart" class="btn btn-info mx-3"><i class="fa fa-shopping-cart mr-1"></i> View in Cart</button>
+                        <button style="display: none;" id="js-added-cart" value="{{m_product.id}}" class="btn btn-success mx-3"><i class="fa fa-shopping-cart mr-1"></i> Go to cart</button>
                     </a>
-                    <a href="{% url 'checkout' 2 p.id %}">   
-                        <button  class="ms-3 btn btn-primary px-3">Buy now</button>
+                    {% for v in variants %}
+
+                    {% for item in cart  %}
+            
+
+                    {% if item.variant.id == v.id %}
+
+                    <script>
+                        document.getElementById('add-cart').style.display = 'none'
+                    </script>
+                    
+                        <button  id="added-cart" value="{{m_product.id}}" class="btn btn-success mx-3"><i class="fa fa-shopping-cart mr-1"></i> Go to cart</button>
+                    
+                    
+                    {% else %}
+                    
+                    {% endif %}
+
+                    {% endfor %}
+
+                    {% endfor %}
+
+                    <a>   
+                        <button  class="ms-3 btn btn-primary px-3 checkout-button">Buy now</button>
                     </a>
                 </div>  
                 <!-- <div class="d-flex pt-2">
@@ -121,7 +165,7 @@
                     </div>
                 </div> -->
             </div>
-        </div>
+        </div> 
         <div class="row px-xl-5">
             <div class="col">
                 <div class="nav nav-tabs justify-content-center border-secondary mb-4">
@@ -133,10 +177,10 @@
                     <div class="tab-pane fade show active" id="tab-pane-1">
                         <h4 class="mb-3">Product Description</h4>
                         <p>
-                            {{p.product_description}}
+                            {{m_product.product_description}}
                         </p>
                     </div>
-        {% endfor %}
+    
 
                     <div class="tab-pane fade" id="tab-pane-2">
                         <h4 class="mb-3">Additional Information</h4>
@@ -285,8 +329,146 @@
 
 <script>
 
-    function add_quantity(pro_id){
 
+    $(document).ready(function () {
+
+        variant_id = $('#product_variant').val()
+        
+        {% for v in variants  %}
+
+            if ('{{v.id}}' == variant_id){
+
+                
+
+            document.getElementById('product_price').textContent = '₹{{v.price}}'
+
+            if('{{v.quantity}}' < 1){
+
+                document.getElementById('stock-count').textContent = '' 
+                document.getElementById('out-of-stock').style.display = 'block'
+
+                }
+                else if('{{v.quantity}}' <= 5){
+                    document.getElementById('out-of-stock').style.display = 'none'
+                    document.getElementById('stock-count').textContent = 'only {{v.quantity}} left' 
+
+                }
+                else{
+                    console.log('varaint id = {{v.id}}')
+                console.log('varaint quantity = {{v.quantity}}')
+                    document.getElementById('out-of-stock').style.display = 'none'
+                    document.getElementById('stock-count').textContent = '' 
+                }
+
+
+            {% for item in cart  %}
+            {% with variant=item.variant  %}
+            
+            if( '{{variant.id}}' == variant_id ){
+                 
+                console.log('pottanaayirunnu njaan')
+
+                document.getElementById('add-cart').style.display = 'none'
+                document.getElementById('added-cart').style.display = 'none'
+                document.getElementById('js-added-cart').style.display = 'inline'
+
+
+            }
+
+            else{
+                console.log('pottanaayirunnilla')
+
+                document.getElementById('js-added-cart').style.display = 'none'
+                document.getElementById('added-cart').style.display = 'none'
+                document.getElementById('add-cart').style.display = 'inline'
+            }
+            
+            {% endwith %}
+            {% endfor %}
+
+            }
+
+        {% endfor %}
+        
+        })
+
+
+        document.getElementById("product_variant").addEventListener("change", (event) => {
+          const variant_id = event.target.value;
+        
+        {% for v in variants  %}
+
+            if ('{{v.id}}' == variant_id){
+
+            document.getElementById('product_price').textContent = '₹{{v.price}}'
+
+            if('{{v.quantity}}' < 1){
+
+            document.getElementById('stock-count').textContent = '' 
+            document.getElementById('out-of-stock').style.display = 'block'
+
+
+            }
+            else if('{{v.quantity}}' <= 5){
+                document.getElementById('out-of-stock').style.display = 'none'
+                document.getElementById('stock-count').textContent = 'Hurry only {{v.quantity}} left' 
+            }
+            else{
+                document.getElementById('out-of-stock').style.display = 'none'
+                document.getElementById('stock-count').textContent = '' 
+            }
+
+            {% for item in cart  %}
+            {% with variant=item.variant  %}
+            
+            if( '{{variant.id}}' == variant_id ){
+                 
+                console.log('pottanaayirunnu njaan')
+
+                document.getElementById('add-cart').style.display = 'none'
+                document.getElementById('added-cart').style.display = 'none'
+                document.getElementById('js-added-cart').style.display = 'inline'
+
+
+            }
+
+            else{
+                console.log('pottanaayirunnilla')
+
+                document.getElementById('js-added-cart').style.display = 'none'
+                document.getElementById('added-cart').style.display = 'none'
+                document.getElementById('add-cart').style.display = 'inline'
+            }
+            
+            {% endwith %}
+            {% endfor %}
+
+            }
+        {% endfor %} 
+        })
+          
+
+    
+    function add_quantity(pro_id){
+        old_qty = document.getElementById('quantity').value
+
+        variant_id = $('#product_variant').val()
+        
+        {% for v in variants  %}
+
+            if ('{{v.id}}' == variant_id){
+
+            if('{{v.quantity}}' <= $('#quantity').val()){
+
+                alert('there is no that much quantity left')
+
+                document.getElementById('quantity').value = old_qty -1
+                return;
+                }
+
+            }
+
+        {% endfor %}
 
         $.ajax({
 
@@ -296,7 +478,6 @@
                 product_id:pro_id,
                 csrfmiddlewaretoken:"{{csrf_token}}",
                 action:'post',
-
 
             },
 
@@ -313,14 +494,33 @@
     }
 
     $(document).on('click','#add-cart',function(e){
-
+        
         e.preventDefault();
 
         if (document.getElementById('quantity').value < 1){
-            alert('entered wrong enttry')
+            alert('entered wrong entry')
             return;
         }
+
+        variant_id = $('#product_variant').val()
         
+        {% for v in variants  %}
+
+            if ('{{v.id}}' == variant_id){
+
+            if('{{v.quantity}}' < $('#quantity').val()){
+
+                Swal.fire(
+                    'Sorry!',
+                    'Out of stock',
+                    'error'
+                    )
+                return;
+                }
+
+            }
+
+        {% endfor %}
 
         $.ajax({
 
@@ -329,22 +529,24 @@
             data:{
                 product_id:$('#add-cart').val(),
                 product_quantity:$('#quantity').val(),
+                product_variant:$('#product_variant').val(),
                 csrfmiddlewaretoken: "{{csrf_token}}",
                 action:'post'
-            
-            
-            
             },
 
             success: function(json){
                 console.log(json)
                 document.getElementById('cart-qty').textContent = json.cart_qty
 
-                document.getElementById('view-cart').style.display = 'inline'
+                document.getElementById('js-added-cart').style.display = 'inline'
 
                 document.getElementById('add-cart').style.display = 'none'
 
-                window.location.replace("/cart");
+                Swal.fire(
+                    'Good job!',
+                    'Item added to your cart',
+                    'success'
+                    )
             },
 
             error: function(xhr, errmshg, err){
@@ -353,6 +555,41 @@
         });
 
     });
+
+
+    $(document).on('click','.checkout-button',function(e){
+        
+        e.preventDefault();
+
+        variant_qty = 
+
+        $.ajax({
+
+            type:'POST',
+            url:"{% url 'checkout' %}",
+            data:{
+                action:'post',
+                product_id:$('#add-cart').val(),
+                product_quantity:$('#quantity').val(),
+                product_variant:$('#product_variant').val(),
+                csrfmiddlewaretoken: "{{csrf_token}}",
+            },
+            success: function(json){
+                console.log(json)
+               window.location.replace('/checkout')
+            },
+
+            error: function(xhr, errmshg, err){
+
+            }
+
+        });
+
+    });
+
+
+
+
 </script>
 
 {% endblock bottomlinks %}

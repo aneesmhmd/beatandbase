@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from admin_products.models import Product
 from django.shortcuts import get_object_or_404
 from .cart import Cart
+from admin_variant.models import Product_Variant
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
@@ -11,8 +12,9 @@ from django.contrib.auth.decorators import login_required
 def cart_summary(request):
 
     cart = Cart(request)
+    variants = Product_Variant.objects.all()
 
-    return render(request,'cart/cart.html',{'cart':cart})
+    return render(request,'cart/cart.html',{'cart':cart,'variants':variants})
 
 
 
@@ -24,9 +26,12 @@ def cart_add(request):
         print(request.POST.get('product_id'))
         product_id = int(request.POST.get('product_id'))
         product_quantity = int(request.POST.get('product_quantity'))
+        variant = request.POST.get('product_variant')
         product = get_object_or_404(Product, id=product_id)
-
-        cart.add(product=product, product_qty=product_quantity)
+        variant_instance = Product_Variant.objects.get(id = variant)
+        price = variant_instance.price
+        color = variant_instance.color
+        cart.add(variant=variant_instance, product=product, color=color, price=price, product_qty=product_quantity)
         cart_quantity = cart.__len__()
 
         response = JsonResponse({'qty': product_quantity,'cart_qty':cart_quantity})
@@ -48,9 +53,9 @@ def cart_delete(request):
 
     if request.POST.get('action') == 'post':
 
-        product_id = int(request.POST.get('product_id'))
+        variant_id = int(request.POST.get('variant_id'))
 
-        cart.delete(product=product_id)
+        cart.delete(variant=variant_id)
 
 
         cart_quantity = cart.__len__()
@@ -71,11 +76,11 @@ def cart_update(request):
 
     if request.POST.get('action') == 'post':
 
-        product_id = int(request.POST.get('product_id'))
-        print(product_id)
+        variant_id = int(request.POST.get('variant_id'))
+        print(variant_id)
         product_quantity = int(request.POST.get('product_quantity'))
 
-        cart.update(product=product_id, qty=product_quantity)
+        cart.update(variant=variant_id, qty=product_quantity)
 
 
         cart_quantity = cart.__len__()

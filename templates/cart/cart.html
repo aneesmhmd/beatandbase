@@ -30,31 +30,31 @@ Your cart
                         </td>
                     {% endif %}
                     {% for item in cart %}
-                        {% with product=item.product  %}
+                        {% with product=item.variant  %}
                         <tr>
                             <td class="align-middle">
-                                <a href="{% url 'product_detail' product.id  %}">
-                                    <img src="{{product.product_img.url   }}" alt="" style="width: 50px;"> {{product.product_name}}
+                                <a href="{% url 'product_detail' product.product.id   %}">
+                                    <img src="{{product.product.product_img.url   }}" alt="" style="width: 50px;"> {{product.product}}({{item.color}})
                                 </a>
                             </td>
-                            <td class="align-middle">{{product.product_price}}</td>
+                            <td class="align-middle">{{item.price}}</td>
                             <td class="align-middle">
                                 <div class="input-group quantity mx-auto" style="width: 100px;">
                                     <div class="input-group-btn">
-                                        <button data-price="{{product.product_price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-minus update-button" >
+                                        <button data-price="{{item.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-minus update-button" >
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
                                     <input id="pro_qty{{product.id}}" type="text" class="form-control form-control-sm bg-secondary text-center" value="{{item.qty}}">
                                     <div class="input-group-btn">
-                                        <button data-price="{{product.product_price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-plus update-button">
+                                        <button onclick="add_quantity('{{product.id}}')" data-price="{{item.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-plus update-button">
                                             <i class="fa fa-plus"></i>
                                         </button>
                                     </div>
                                 </div>
                             </td>
                             <td class="align-middle">
-                                <span id="single_pro_total{{product.id}}"> {{ product.product_price| mul:item.qty }} </span>
+                                <span id="single_pro_total{{product.id}}"> {{ item.price| mul:item.qty }} </span>
                             </td>
                             <td class="align-middle">
                                 <a >
@@ -134,7 +134,7 @@ Your cart
   // Update button
 
 
-  $(document).on('click', '.update-button', function(e){
+$(document).on('click', '.update-button', function(e){
 
 e.preventDefault();
 
@@ -149,7 +149,7 @@ $.ajax({
     url: '{% url "cart-update" %}',
     data: {
 
-        product_id: $(this).data('index'),
+        variant_id: $(this).data('index'),
         product_quantity: pro_qty,
         csrfmiddlewaretoken: "{{csrf_token}}",
         action: 'post'
@@ -189,7 +189,7 @@ $.ajax({
 
 
         
-        $(document).on('click', '.delete-button', function(e){
+$(document).on('click', '.delete-button', function(e){
             
 e.preventDefault();
 
@@ -199,7 +199,7 @@ $.ajax({
     url: '{% url "cart-delete" %}',
     data: {
 
-        product_id: $(this).data('index'),
+        variant_id: $(this).data('index'),
         csrfmiddlewaretoken: "{{csrf_token}}",
         action: 'post'
 
@@ -229,11 +229,32 @@ $.ajax({
 
 })
 
+function add_quantity(pro_id){
 
-
-    </script>
-  
-  
+    old_qty = document.getElementById('pro_qty'+pro_id).value
+    console.log(old_qty)
 
     
-    {% endblock body %}
+    {% for v in variants  %}
+
+
+        if ('{{v.id}}' == pro_id){
+
+
+            if('{{v.quantity}}' <= $('#pro_qty'+pro_id).val()){
+
+                alert('Sorry, only {{v.quantity}} left      ')
+
+                document.getElementById('pro_qty'+pro_id).value = old_qty -1
+                return;
+                }
+
+        }
+
+   {% endfor %}
+
+    }
+
+</script>
+
+{% endblock %}

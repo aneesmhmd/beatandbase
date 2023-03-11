@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'wishlist',
     'checkout',
+    'admin_variant',
 ]
 
 MIDDLEWARE = [
