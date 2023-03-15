@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     'mathfilters',
     'wishlist',
     'checkout',
+    'checkout.templatetags',
     'admin_variant',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -167,4 +169,7 @@ EMAIL_USE_TLS=True
 
 TWILIO_ACCOUNT_SID = os.getenv('sid')
 TWILIO_AUTH_TOKEN = os.getenv('token')
+
+RAZOR_KEY_ID = 'rzp_test_j7tLlhYiBfKPT3'
+RAZOR_KEY_SECRET = 'Y8g1fS0rl9gljK8gLexy8497'
 

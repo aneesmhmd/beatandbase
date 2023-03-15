@@ -24,37 +24,33 @@ Your cart
                     </thead>
                     <tbody class="align-middle">
                     {% if cart %}
-                    {% else %}
-                        <td colspan="5" class="align-middle">
-                           <h4 class="p-4"><i class="fa fa-times"></i> No items in your cart </h4>
-                        </td>
-                    {% endif %}
+                    
                     {% for item in cart %}
                         {% with product=item.variant  %}
                         <tr>
                             <td class="align-middle">
                                 <a href="{% url 'product_detail' product.product.id   %}">
-                                    <img src="{{product.product.product_img.url   }}" alt="" style="width: 50px;"> {{product.product}}({{item.color}})
+                                    <img src="{{product.product.product_img.url   }}" alt="" style="width: 50px;"> {{product.product}}({{product.color}})
                                 </a>
                             </td>
-                            <td class="align-middle">{{item.price}}</td>
+                            <td class="align-middle">{{item.variant.price}}</td>
                             <td class="align-middle">
                                 <div class="input-group quantity mx-auto" style="width: 100px;">
                                     <div class="input-group-btn">
-                                        <button data-price="{{item.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-minus update-button" >
+                                        <button data-price="{{item.variant.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-minus update-button" >
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
                                     <input id="pro_qty{{product.id}}" type="text" class="form-control form-control-sm bg-secondary text-center" value="{{item.qty}}">
                                     <div class="input-group-btn">
-                                        <button onclick="add_quantity('{{product.id}}')" data-price="{{item.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-plus update-button">
+                                        <button onclick="add_quantity('{{product.id}}')" data-price="{{item.variant.price}}" data-index="{{product.id}}" class="btn btn-sm btn-primary btn-plus update-button">
                                             <i class="fa fa-plus"></i>
                                         </button>
                                     </div>
                                 </div>
                             </td>
                             <td class="align-middle">
-                                <span id="single_pro_total{{product.id}}"> {{ item.price| mul:item.qty }} </span>
+                                <span id="single_pro_total{{product.id}}"> {{ item.variant.price| mul:item.qty }} </span>
                             </td>
                             <td class="align-middle">
                                 <a >
@@ -64,6 +60,11 @@ Your cart
                        
                         {% endwith %}
                     {% endfor %}
+                    {% else %}
+                        <td colspan="5" class="align-middle">
+                           <h4 class="p-4"><i class="fa fa-times"></i> No items in your cart </h4>
+                        </td>
+                    {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -87,7 +88,7 @@ Your cart
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3 pt-1">
                             <h6 class="font-weight-medium">Subtotal</h6>
-                            <h6 id="total_field" class="font-weight-medium">{{ cart.get_total }}</h6>
+                            <h6 id="total_field" class="font-weight-medium">₹ {{ sub_total }}</h6>
                         </div>
                         <div class="d-flex justify-content-between mb-3 pt-1">
                             <h6 class="font-weight-medium">Shipping</h6>
@@ -99,7 +100,7 @@ Your cart
                         </div>
                         <div class="d-flex justify-content-between">    
                             <h6 class="font-weight-medium">GST:</h6>
-                            <h6 id="tax_field" class="font-weight-medium">₹ {{cart.get_total | mul:.05}}</h6>
+                            <h6 id="tax_field" class="font-weight-medium">₹ {{gst|floatformat:2}}</h6>
                         </div>
                     </div>
                     <div class="card-footer border-secondary bg-transparent">
@@ -108,7 +109,7 @@ Your cart
                             {% with total=cart.get_total %}
 
                                 {% if cart %}
-                                    <h5 id="grand_total" class="font-weight-bold">₹ {{cart.get_gst }}</h5>
+                                    <h5 id="grand_total" class="font-weight-bold">₹ {{grand_total|floatformat:2}}</h5>
                                 {% else %}
                                     <h6 class="font-weight-medium">₹ 0</h6>
                                 {% endif %}
@@ -116,7 +117,7 @@ Your cart
                             {% endwith %}
                         </div>
                         {% if cart %}
-                        <a href="" >
+                        <a href="{% url 'cart_checkout' %}" >
                             <button type="" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
                         </a>
                         {% else %}

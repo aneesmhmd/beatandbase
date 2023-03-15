@@ -29,6 +29,3 @@ class Product_Image(models.Model):
    
     def __str__(self) -> str:
         return str(self.product)
-    
-
-

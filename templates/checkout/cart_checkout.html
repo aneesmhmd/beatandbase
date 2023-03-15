@@ -3,6 +3,9 @@
 {% load mathfilters %} 
 {% load static %}
 {% load my_filters %}
+{% block title %}
+Checkout
+{% endblock title %}
 
 {% block links %}
 
@@ -11,10 +14,6 @@
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
 
 {% endblock links %}
-
-{% block title %}
-Checkout
-{% endblock title %}
 
 {% block body %}
 
@@ -215,7 +214,7 @@ Checkout
             </div>
 
 
-            <div class="col-lg-6">
+            <div class="col-lg-6 my-3">
                 <div class="card border-secondary mb-5">
 
                     <div class="card-header bg-secondary border-0">
@@ -224,24 +223,24 @@ Checkout
 
                     <div class="card-body">
                         <h5 class="font-weight-medium mb-3">Products</h5>
-                        <div class="d-flex justify-content-between">
-
+                          {% for variant  in variants  %}
+                          <div class="d-flex justify-content-between">
                             <div class="d-flex justify-content-between">
                                 <div  style="width: 60px; margin-right: 10px;">
-                                    <img class="w-100" src="{{variant.product.product_img.url}}" alt="">
+                                    <img class="w-100" src="{{variant.variant.product.product_img.url}}" alt="">
                                 </div>
-                                <p class="my-auto">{{variant.product.product_name}} ({{variant.color}}) &nbsp; x {{quantity}}</p>
+                                <p class="my-auto">{{variant.variant.product.product_name}} ({{variant.variant.color}}) &nbsp; x {{variant.qty}}</p>
                             </div>
 
-                            <p class="my-auto">₹ {{variant.price}}</p>
+                            <p class="my-auto">₹ {{variant.variant.price}}</p>
 
                         </div>
-                       
+                        {% endfor %}
                         <hr class="mt-0">
 
                         <div class="d-flex justify-content-between mb-3 pt-1">
                             <h6 class="font-weight-medium">Subtotal</h6>
-                            <p class="my-auto">{{variant.price|mul:quantity}}</p>
+                            <p class="my-auto">{{sub_total}}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <h6 class="font-weight-medium">Shipping</h6>
@@ -250,7 +249,7 @@ Checkout
 
                         <div class="d-flex justify-content-between">
                           <h6 class="font-weight-medium">GST</h6>
-                          <h6 class="font-weight-medium">₹ {{gst}}</h6>
+                          <h6 class="font-weight-medium">₹ {{sub_total|mul:0.05}}</h6>
                        </div>
 
                     </div>
@@ -274,35 +273,21 @@ Checkout
                         </div>
                         <div class="card-body">
                           
-                           
-                          <div class="form-group">
-                            {% for pm in payment_methods  %}
-                              <div class="custom-control custom-radio">
-                                  <input {% if pm.id == 2 %}checked{% endif %} type="radio" class="custom-control-input" name="payment" id="{{pm.id}}">
-                                  <label class="custom-control-label" for="{{pm.id}}">{{pm.method}}</label>
-                              </div>
-                              {% endfor %}
-                          </div> 
-
-                            {% comment %} <div class="form-group">
-                                <div  class="custom-control custom-radio">
-                                    <input onclick="get_payment_method()" required type="radio" class="custom-control-input" name="payment" id="directcheck">
-                                    <label class="custom-control-label" for="directcheck">COD</label>
-                                </div>
-                            </div>
-
-                          <div class="">
+                            <div class="form-group">
+                              {% for pm in payment_methods  %}
                                 <div class="custom-control custom-radio">
-                                    <input onclick="get_payment_method()" type="radio" class="custom-control-input" name="payment" id="banktransfer">
-                                    <label class="custom-control-label" for="banktransfer">Bank Transfer</label>
+                                    <input {% if pm.id == 2 %}checked{% endif %} onclick="get_payment_method()" name="payment" type="radio" class="custom-control-input" id="{{pm.id}}">
+                                    <label class="custom-control-label" for="{{pm.id}}">{{pm.method}}</label>
                                 </div>
-                            </div>  {% endcomment %}
+                                {% endfor %}
+                            </div> 
 
                         </div>
 
                         <div class="card-footer border-secondary bg-transparent">
                             <button id="place_order" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
-                        </div>
+                            {% comment %} <button id="rzp-button1">Pay</button> {% endcomment %}
+                          </div>
 
                     </form>
                 </div>
@@ -313,10 +298,18 @@ Checkout
 
     <script>
       var shipping_address = $('input[name="address"]:checked').attr('id')
-      var payment_method = get_payment_method() ;
-      var variant = '{{variant.id}}';
+      var payment_method;
+      const cart_variants=[]
+      const variants_quantity=[]
+      {% for variant in variants  %}
+        
+      cart_variants.push('{{variant.id}}')
+      variants_quantity.push('{{variant.qty}}')
+
+      {% endfor %}
+
       var qty = '{{quantity}}';
-      var total =' {{total}}';
+      var total ='{{total}}';
       var tax = '{{gst}}';
 
       function get_payment_method(){
@@ -324,7 +317,10 @@ Checkout
         for (i=0;i<adrs.length;i++){
           if (adrs[i].checked){
             attr = adrs[i].getAttribute('id')
-            return attr
+            payment_method = attr
+            console.log(
+        shipping_address,cart_variants,qty,total,tax,payment_method
+      )
           }
         }
       }
@@ -348,15 +344,12 @@ Checkout
               csrfmiddlewaretoken: "{{csrf_token}}",
               action:'post',
               'shipping_address': shipping_address,
-              'variant': variant,
-              'quantity': qty,
               'total': total,
               'gst': tax,
               'payment_method':payment_method,
-              'from':'direct',
+              'from':'cart',
           },
-          success: function(response) {
-            var order_id = response.order_id
+          success: function() {
             Swal.fire({
               icon: 'success',
               title: 'Your order placed successfully',            
@@ -365,11 +358,11 @@ Checkout
             }).then((result) => {
               /* Read more about isConfirmed, isDenied below */
               if (result.isConfirmed) {
-                window.location.href = `http://127.0.0.1:8989/orders/invoice/?id=23${order_id}`
+                window.location.href = `http://127.0.0.1:8989/orders/invoice/?id=${order_id}`
               }  
-
+            
             })
-
+  
              
           },
         
@@ -399,7 +392,9 @@ Checkout
           "image": "{% static 'user_home/images/icon.png' %}",
           "order_id": "{{payment.id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
           "handler": function (response){
-            cod_order()
+              alert(response.razorpay_payment_id);
+              alert(response.razorpay_order_id);
+              alert(response.razorpay_signature)
           },
           "prefill": {
               "name": "{{request.user.username}}",
@@ -424,14 +419,15 @@ Checkout
               alert(response.error.metadata.payment_id);
       });
       document.getElementById('place_order').onclick = function(e){
-        e.preventDefault();
-        method = document.querySelector('input[name="payment"]:checked').getAttribute('id')
-        if(method == 1){
-          cod_order()
-        }
-        else if(method == 2){
-          rzp1.open();
-        }
+          e.preventDefault();
+          method = document.querySelector('input[name="payment"]:checked').getAttribute('id')
+          if(method == 1){
+            cod_order()
+          }
+          else if(method == 2){
+            rzp1.open();
+          }
+          
       }
       </script>
 

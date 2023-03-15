@@ -13,11 +13,8 @@ def user_products(request):
  
     sort_by = request.GET.get('sort_by')
 
-    if sort_by == 'price_low_to_high':
-        products = products.order_by('product_price')
-    elif sort_by == 'price_high_to_low':
-        products = products.order_by('-product_price')
-    elif sort_by == 'name_a_to_z':
+    
+    if sort_by == 'name_a_to_z':
         products = products.order_by('product_name')
     elif sort_by == 'name_z_to_a':
         products = products.order_by('-product_name')
@@ -26,11 +23,14 @@ def user_products(request):
     page_number = request.GET.get('page')
     page_product = paginator.get_page(page_number)
 
+    
+
     dicts = {
         'categories': admin_products.Categories.objects.all().order_by('id'),
         'brands': admin_products.Brand.objects.all().order_by('id'),
         'ad':Advertisement.objects.all().order_by('id'),
         'product':page_product,
+        'variants':Product_Variant.objects.all(),
     }
     return render(request,'user_products/user_products.html',dicts)
 

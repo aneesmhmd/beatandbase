@@ -8,7 +8,6 @@ def user_profile(request):
     context = {
         'address':User_Address.objects.filter(user=request.user),
     }
-    print(request.user)
     return render(request,'user_profile/user_profile.html',context)
 
 def change_dp(request):
@@ -25,7 +24,6 @@ def change_dp(request):
     return redirect(user_profile)
 
 def edit_address(request, address_id):
-    print(address_id)
     address =User_Address.objects.get(id=address_id)
 
     if request.method == 'POST':

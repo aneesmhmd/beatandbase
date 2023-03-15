@@ -5,7 +5,7 @@ from admin_products.models import Product
 
 def product_variants(request):
     context = {
-        'variants' : Product_Variant.objects.all().order_by('id'),
+        'variants' : Product_Variant.objects.all().order_by('-product'),
         'products' : Product.objects.all().order_by('id'),
         'colors' : Colors.objects.all().order_by('id'),
     }
@@ -27,6 +27,7 @@ def add_variant(request):
     color = request.POST['color']
     quantity = request.POST['quantity']
 
+    # null value checking 
     check = [product_id,price,quantity]
     for values in check:
         if values == '':
@@ -35,12 +36,24 @@ def add_variant(request):
         else:
             pass
     
+    # checking price and quantity is number
     try:
         check_number = int(price)
         check_number = int(quantity)
     except:
         messages.info(request,'number field got unexpected values')
         return redirect(product_variants)
+    
+    # checking price and quantity positive number
+    check_pos =[int(price),int(quantity)]
+    for value in check_pos:
+        if value < 0:
+            messages.info(request,'price and quantity should be positive number')
+            return redirect(product_variants)
+        else:
+            pass
+    
+    
    
     product = Product.objects.get(id = product_id)
     color = Colors.objects.get(id=color)

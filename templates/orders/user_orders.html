@@ -1,0 +1,145 @@
+{% extends 'user_home/base.html' %} 
+{% load static %} 
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'user_products/css/orde_successful.css' %}">
+{% endblock links %}
+
+{% block title %}OrderS {% endblock %} 
+
+{% block body %}
+<h3 class="text-center">Your orders</h3>
+<section style="background-color: #eee;">
+  <div class="container py-5">
+
+    {% if orders %}
+    {% for item in order_items  %}
+
+    <div class="justify-content-center mb-3">
+      <div class="col-md-12 col-xl-12">
+        <div class="card shadow-0 border rounded">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-12 col-lg-3 col-xl-3 mb-4 mb-lg-0">
+                <div class="bg-image hover-zoom ripple rounded ripple-surface">
+                  <img src="{{item.variant.product.product_img.url}}"
+                    class="w-100" />
+                  <a href="#!">
+                    <div class="hover-overlay">
+                      <div class="mask" style="background-color: rgba(253, 253, 253, 0.15);"></div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-6 col-xl-6">
+                <h5 class="text-danger">{{item.order.order_id}}</h5>
+                <h5>{{item.variant.product.product_name}}</h5>
+                <br>
+                <h6>Color : {{item.variant.color}}</h6>
+                <h6>Brand : {{item.variant.product.brand}}</h6>
+                <h6>Category : {{item.variant.product.category}}</h6>
+                
+                {% comment %} <div class="mt-1 mb-0 text-muted small">
+                  <span>100% cotton</span>
+                  <span class="text-primary"> • </span>
+                  <span>Light weight</span>
+                  <span class="text-primary"> • </span>
+                  <span>Best finish<br /></span>
+                </div>
+                <div class="mb-2 text-muted small">
+                  <span>Unique design</span>
+                  <span class="text-primary"> • </span>
+                  <span>For men</span>
+                  <span class="text-primary"> • </span>
+                  <span>Casual<br /></span>
+                </div> {% endcomment %}
+                {% comment %} <p class="text-truncate mb-4 mb-md-0">
+                  There are many variations of passages of Lorem Ipsum available, but the
+                  majority have suffered alteration in some form, by injected humour, or
+                  randomised words which don't look even slightly believable.
+                </p> {% endcomment %}
+              </div>
+              <div class="col-md-6 col-lg-3 col-xl-3 border-sm-start-none border-start">
+                <div class="d-flex flex-row align-items-center mb-1">
+                  <sub class="text-dark">Total &nbsp;</sub>
+                  <h4 class="mb-1 me-1">₹ {{item.variant.price}}</h4>
+                  {% comment %} <span class="text-danger"><s>$20.99</s></span> {% endcomment %}
+                </div>
+                <h6 class="text-muted">{{item.order.placed_at|timesince}} ago</h6>
+                {% comment %} <h6 class="text-success">Free shipping</h6> {% endcomment %}
+                <div class="d-flex flex-column mt-4">
+                  <button type="button" class="btn btn-primary "  data-bs-toggle="modal" data-bs-target="#viewdetail{{forloop.counter}}">
+                    <i class="fas fa-detail me-2"></i>View Details
+                  </button>
+                  <br>
+                  <a style="cursor: auto;" class="btn btn-warning">
+                      {{item.order.status}}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     <!-- Modal -->
+     <div class="modal fade" id="viewdetail{{forloop.counter}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+     <div class="modal-dialog">
+       <div class="modal-content">
+         <div class="d-flex justify-content-end p-2">
+           <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close">
+             <i class="fa fa-times"></i>
+           </button>
+         </div>
+         <div class="modal-body text-start text-black p-4">
+
+
+           <h5 class="modal-title text-uppercase mb-5" id="exampleModalLabel">Customer : {{item.order.customer.username}}</h5>
+           <h6 class="text-danger">order id : {{item.order.order_id}}</h6>
+           <h4 class="mb-5" style="color: #d93636;">Thanks for your order</h4>
+           <p class="mb-0" style="color: #d93636;">Payment summary</p>
+           <hr class="mt-2 mb-4"
+             style="height: 0; background-color: transparent; opacity: .75; border-top: 2px dashed #9e9e9e;">
+
+           <div class="d-flex justify-content-between">
+             <p class="fw-bold mb-0">{{item.variant.product}}</p>
+             <p class="text-muted mb-0">₹ {{item.variant.price}}</p>
+           </div>
+
+           <div class="d-flex justify-content-between">
+             <p class="small mb-0">Shipping</p>
+             <p class="small mb-0">₹ 100.00</p>
+           </div>
+
+           <div class="d-flex justify-content-between">
+             <p class="fw-bold">Total</p>
+             <p class="fw-bold" style="color: #d93636;">₹ {{item.variant.price|add:100}}</p>
+           </div>
+
+         </div>
+         <div class="modal-footer d-flex justify-content-center border-top-0 py-4">
+          <button type="button" class="btn btn-primary btn-close" data-bs-dismiss="modal" aria-label="Close">
+            Go back
+          </button>
+         </div>
+       </div>
+     </div>
+   </div>
+    {% endfor %}
+
+    {% else %}
+    <h3 class="text-center">No ordered anything yet</h3>
+    {% endif %}
+
+  </div>
+</section>
+
+
+       
+
+       
+
+
+{% endblock body %}

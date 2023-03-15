@@ -1,6 +1,10 @@
 {% extends 'user_home/base.html' %}
 {% load static %}
 
+{% block title %}
+{{m_product.product_name}}
+{% endblock title %}
+
 {% block links %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
@@ -366,7 +370,6 @@
             
             if( '{{variant.id}}' == variant_id ){
                  
-                console.log('pottanaayirunnu njaan')
 
                 document.getElementById('add-cart').style.display = 'none'
                 document.getElementById('added-cart').style.display = 'none'
@@ -376,7 +379,6 @@
             }
 
             else{
-                console.log('pottanaayirunnilla')
 
                 document.getElementById('js-added-cart').style.display = 'none'
                 document.getElementById('added-cart').style.display = 'none'
@@ -498,7 +500,11 @@
         e.preventDefault();
 
         if (document.getElementById('quantity').value < 1){
-            alert('entered wrong entry')
+            Swal.fire(
+                    'Oops!',
+                    'Entered wrong entry',
+                    'warning'
+                    )
             return;
         }
 
@@ -551,7 +557,7 @@
 
             error: function(xhr, errmshg, err){
 
-            }
+            } 
         });
 
     });
@@ -561,7 +567,33 @@
         
         e.preventDefault();
 
-        variant_qty = 
+        if (document.getElementById('quantity').value < 1){
+            Swal.fire(
+                    'Oops!',
+                    'Entered wrong entry',
+                    'warning',
+                    )
+            return;
+        }
+        
+
+        {% for v in variants  %}
+
+            if ('{{v.id}}' == variant_id){
+
+            if('{{v.quantity}}' < $('#quantity').val()){
+
+                Swal.fire(
+                    'Sorry!',
+                    'Out of stock',
+                    'error'
+                    )
+                return;
+                }
+
+            }
+
+        {% endfor %}
 
         $.ajax({
 

@@ -64,7 +64,6 @@ def user_register(request):
             password2 = request.POST['pass2']
             
             # null values checking
-
             check = [name,email,password1,password2]
             for values in check:
                 if values == '':
